@@ -42,7 +42,7 @@ func (h *Hub) CreateRoom(game *game.Game, logger *logger.Logger) *Room {
 		if !ok {
 			h.rooms[id] = NewRoom(id, game, logger)
 			game.RoomID = id
-			h.logger.Debugf("room %s has beed created", id)
+			h.logger.Debugf("room %s has been created", id)
 			return h.rooms[id]
 		}
 	}
