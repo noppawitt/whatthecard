@@ -28,7 +28,7 @@ func NewGame(logger *logger.Logger) *Game {
 
 // State represents a game state
 type State struct {
-	DrawPileLeft     int       `json:"darw_pile_left"`
+	DrawPileLeft     int       `json:"draw_pile_left"`
 	DiscardPile      *Pile     `json:"discard_pile"`
 	Players          []*Player `json:"players"`
 	LastDrawPlayerID int       `json:"last_draw_player_id"`
@@ -86,9 +86,12 @@ func (g *Game) AddCard(text, author string) *Card {
 
 // State returns a game state for player with given player id
 func (g Game) State(playerID int) State {
-	players := make([]*Player, len(g.Players))
-	for i, player := range g.Players {
-		players[i] = player
+	players := make([]*Player, 0, len(g.Players))
+	for i := 1; i <= len(g.Players); i++ {
+		player, ok := g.Players[i]
+		if ok {
+			players = append(players, player)
+		}
 	}
 	return State{
 		DrawPileLeft:     g.DrawPile.Len(),

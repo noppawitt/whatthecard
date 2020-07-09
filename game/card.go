@@ -42,7 +42,7 @@ func (p *Pile) Shuffle() {
 
 // Len return a length of the pile
 func (p Pile) Len() int {
-	return p.Len()
+	return len(p.Cards)
 }
 
 // Pop pops the top card from the pile
