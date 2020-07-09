@@ -24,6 +24,7 @@ type Client struct {
 	send chan []byte
 }
 
+// NewClient returns a new Client
 func NewClient(conn *websocket.Conn) *Client {
 	return &Client{
 		conn: conn,
@@ -31,6 +32,7 @@ func NewClient(conn *websocket.Conn) *Client {
 	}
 }
 
+// ReadPump reads for an incomming message
 func (c *Client) ReadPump() {
 	defer close(c.send)
 
@@ -50,6 +52,7 @@ func (c *Client) ReadPump() {
 	}
 }
 
+// WriteJSON writes a JSON to the client
 func (c *Client) WriteJSON(v interface{}) {
 	err := c.conn.WriteJSON(v)
 	if err != nil {

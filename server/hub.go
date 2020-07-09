@@ -11,14 +11,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// RoomIDLength is the length of a room id
 const RoomIDLength = 4
 
+// Hub is central handler for websocket connections
 type Hub struct {
 	rooms    map[string]*Room
 	upgrader websocket.Upgrader
 	logger   *logger.Logger
 }
 
+// NewHub returns a new Hub
 func NewHub(logger *logger.Logger) *Hub {
 	return &Hub{
 		rooms: make(map[string]*Room),
@@ -31,10 +34,12 @@ func NewHub(logger *logger.Logger) *Hub {
 	}
 }
 
+// GetRoom returns a room with the given room id
 func (h Hub) GetRoom(id string) *Room {
 	return h.rooms[id]
 }
 
+// CreateRoom creates a new room
 func (h *Hub) CreateRoom(game *game.Game, logger *logger.Logger) *Room {
 	for {
 		id := randString(RoomIDLength)
@@ -57,6 +62,7 @@ func randString(n int) string {
 	return string(b)
 }
 
+// HandleWs handles websocket connection
 func (h *Hub) HandleWs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	roomID := vars["id"]

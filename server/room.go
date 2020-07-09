@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Room represents a client room
 type Room struct {
 	ID           string
 	clients      map[int]*Client
@@ -18,6 +19,7 @@ type Room struct {
 	logger       *logger.Logger
 }
 
+// NewRoom returns a new Room
 func NewRoom(id string, game *game.Game, logger *logger.Logger) *Room {
 	return &Room{
 		ID:           id,
@@ -29,6 +31,7 @@ func NewRoom(id string, game *game.Game, logger *logger.Logger) *Room {
 	}
 }
 
+// Join joins the client to the room
 func (r *Room) Join(client *Client) int {
 	id := r.lastClientID + 1
 	r.clients[id] = client
@@ -36,11 +39,13 @@ func (r *Room) Join(client *Client) int {
 	return id
 }
 
+// Leave leaves the client from the room
 func (r *Room) Leave(clientID int) {
 	delete(r.clients, clientID)
 	r.TotalClient--
 }
 
+// WritePump writes messages to the connected clients and checks if any clients are disconnected
 func (r *Room) WritePump(clientID int) {
 	ticker := time.NewTicker(pingPeriod)
 	defer ticker.Stop()
@@ -82,11 +87,13 @@ func (r *Room) WritePump(clientID int) {
 	}
 }
 
+// Message represents a message from the websocket client
 type Message struct {
 	Name    string          `json:"name"`
 	Payload json.RawMessage `json:"payload"`
 }
 
+// ToGameCommand converts a Message to a Game Command
 func (m Message) ToGameCommand() (game.Command, error) {
 	cmd := game.Command{}
 	var payload interface{}
