@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 	"whatthecard/game"
 	"whatthecard/logger"
@@ -33,7 +34,8 @@ func NewRoom(id string, game *game.Game, logger *logger.Logger) *Room {
 
 // Join joins the client to the room
 func (r *Room) Join(client *Client) int {
-	id := r.lastClientID + 1
+	r.lastClientID++
+	id := r.lastClientID
 	r.clients[id] = client
 	r.TotalClient++
 	return id
@@ -60,29 +62,39 @@ func (r *Room) WritePump(clientID int) {
 		case <-ticker.C:
 			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := client.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				r.logger.Error(err)
 				return
 			}
 		case msgByte := <-client.send:
 			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if len(msgByte) == 0 {
+				break
+			}
+
 			msg := &Message{}
 			err := json.Unmarshal(msgByte, msg)
 			if err != nil {
+				r.logger.Error(err)
 				return
 			}
-			cmd, err := msg.ToGameCommand()
+			cmd, err := msg.ToGameCommand(clientID)
 			if err != nil {
-				return
+				r.logger.Error(err)
 			}
 
 			r.game.ExecCommand(cmd)
+			r.BroadcastState()
+		}
+	}
+}
 
-			for _, player := range r.game.Players {
-				state := r.game.State(player.ID)
-				client := r.clients[player.ID]
-				if client != nil {
-					client.WriteJSON(state)
-				}
-			}
+// BroadcastState broadcasts latest game state to all clients
+func (r *Room) BroadcastState() {
+	for _, player := range r.game.Players {
+		state := r.game.State(player.ID)
+		client := r.clients[player.ID]
+		if client != nil {
+			client.WriteJSON(state)
 		}
 	}
 }
@@ -94,20 +106,27 @@ type Message struct {
 }
 
 // ToGameCommand converts a Message to a Game Command
-func (m Message) ToGameCommand() (game.Command, error) {
-	cmd := game.Command{}
-	var payload interface{}
-	switch m.Name {
-	case "remove_player":
-		payload = game.RemovePlayerPayload{}
-	case "draw_card":
-		payload = game.DrawCardPayload{}
-	case "add_card":
-		payload = game.AddCardPayload{}
-	case "reset":
-		payload = game.ResetPayload{}
+func (m Message) ToGameCommand(playerID int) (game.Command, error) {
+	cmd := game.Command{
+		Name:     m.Name,
+		PlayerID: playerID,
 	}
-	err := json.Unmarshal(m.Payload, &payload)
+	var payload interface{}
+	switch cmd.Name {
+	case "add_player":
+		payload = &game.AddPlayerPayload{}
+	case "remove_player":
+		payload = &game.RemovePlayerPayload{}
+	case "add_card":
+		payload = &game.AddCardPayload{}
+	case "reset":
+		payload = &game.ResetPayload{}
+	case "start", "draw_card":
+		return cmd, nil
+	default:
+		return cmd, fmt.Errorf("invalid game command: %s", cmd.Name)
+	}
+	err := json.Unmarshal(m.Payload, payload)
 	if err != nil {
 		return cmd, err
 	}

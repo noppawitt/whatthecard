@@ -36,6 +36,6 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 }
 
 // Errorf always log the message
-func (l *Logger) Error(format string, v ...interface{}) {
-	log.Printf(format, v...)
+func (l *Logger) Error(v ...interface{}) {
+	log.Println(v...)
 }

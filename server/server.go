@@ -28,16 +28,17 @@ func New(hub *Hub, gameService *game.Service, logger *logger.Logger) *Server {
 }
 
 // Start starts the server
-func (s *Server) Start() error {
+func (s *Server) Start(addr string) error {
 	s.registerRoutes()
 	http.Handle("/", s.r)
-	return http.ListenAndServe(":8080", nil)
+	s.logger.Debugf("server is running at %s", addr)
+	return http.ListenAndServe(addr, nil)
 }
 
 func (s *Server) registerRoutes() {
 	s.r.HandleFunc("/", s.handleHome).Methods(http.MethodGet)
 	s.r.HandleFunc("/room", s.handleCreateRoom).Methods(http.MethodPost)
-	s.r.HandleFunc("/ws/room/{id}", s.hub.HandleWs).Methods(http.MethodGet)
+	s.r.HandleFunc("/ws/room/{id}", s.hub.HandleWS).Methods(http.MethodGet)
 }
 
 func (Server) handleHome(w http.ResponseWriter, r *http.Request) {

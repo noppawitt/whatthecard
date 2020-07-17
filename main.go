@@ -9,11 +9,11 @@ import (
 
 func main() {
 	logger := logger.NewLogger("debug")
-
 	hub := server.NewHub(logger)
 	gameService := game.NewService(logger)
 	server := server.New(hub, gameService, logger)
-	if err := server.Start(); err != nil {
+
+	if err := server.Start(":4000"); err != nil {
 		log.Fatal(err)
 	}
 }

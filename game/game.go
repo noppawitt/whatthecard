@@ -6,9 +6,33 @@ import (
 
 const maxCardsPerPlayer = 20
 
+// Phase represents a game phase
+type Phase int
+
+// Game phases
+const (
+	WaitingPhase Phase = iota
+	SubmitPhase
+	PlayPhase
+)
+
+func (p Phase) String() string {
+	switch p {
+	case WaitingPhase:
+		return "WAITING_PHASE"
+	case SubmitPhase:
+		return "SUBMIT_PHASE"
+	case PlayPhase:
+		return "PLAY_PHASE"
+	default:
+		return ""
+	}
+}
+
 // Game represents a game
 type Game struct {
 	RoomID           string
+	Phase            Phase
 	Players          map[int]*Player
 	DrawPile         *Pile
 	DiscardPile      *Pile
@@ -22,6 +46,7 @@ type Game struct {
 // NewGame returns a new Game
 func NewGame(logger *logger.Logger) *Game {
 	return &Game{
+		Phase:          WaitingPhase,
 		Players:        make(map[int]*Player),
 		DrawPile:       NewPile(),
 		DiscardPile:    NewPile(),
@@ -34,7 +59,9 @@ func NewGame(logger *logger.Logger) *Game {
 type State struct {
 	Phase            string    `json:"phase"`
 	DrawPileLeft     int       `json:"draw_pile_left"`
-	DiscardPile      *Pile     `json:"discard_pile"`
+	DiscardCards     []*Card   `json:"discard_cards"`
+	CardsPerPlayer   int       `json:"cards_per_player"`
+	PlayerID         int       `json:"player_id"`
 	Players          []*Player `json:"players"`
 	LastDrawPlayerID int       `json:"last_draw_player_id"`
 }
@@ -49,8 +76,7 @@ func (g *Game) SetCardsPerPlayer(n int) {
 }
 
 // AddPlayer adds a player to the game
-func (g *Game) AddPlayer(name string) *Player {
-	id := g.lastPlayerID + 1
+func (g *Game) AddPlayer(id int, name string) *Player {
 	p := NewPlayer(id, name)
 	g.Players[p.ID] = p
 	g.logger.Debugf("player %d has joined the room %s", id, g.RoomID)
@@ -82,13 +108,19 @@ func (g *Game) Reset(mode int) {
 	case 0:
 		g.DrawPile.Reset()
 		g.DiscardPile.Reset()
+		g.Phase = WaitingPhase
+		for _, player := range g.Players {
+			player.NumberOfSubmittedCards = 0
+		}
 	case 1:
 		g.DrawPile.Cards = append(g.DrawPile.Cards, g.DiscardPile.Cards...)
 		g.DiscardPile.Reset()
 	}
-	for _, player := range g.Players {
-		player.NumberOfSubmittedCards = 0
-	}
+}
+
+// Start changes game phase to submit phase
+func (g *Game) Start() {
+	g.Phase = SubmitPhase
 }
 
 // AddCard adds a card to the game
@@ -104,19 +136,24 @@ func (g *Game) AddCard(text string, playerID int) *Card {
 	}
 	g.DrawPile.Push(card)
 	player.NumberOfSubmittedCards++
+
+	allSubmitted := true
+	for _, player := range g.Players {
+		if player.NumberOfSubmittedCards < g.CardsPerPlayer {
+			allSubmitted = false
+			break
+		}
+	}
+
+	if allSubmitted {
+		g.Phase = PlayPhase
+	}
+
 	return card
 }
 
 // State returns a game state for player with given player id
 func (g Game) State(playerID int) State {
-	phase := "play"
-	for _, player := range g.Players {
-		if player.NumberOfSubmittedCards < g.CardsPerPlayer {
-			phase = "submit_cards"
-			break
-		}
-	}
-
 	players := make([]*Player, 0, len(g.Players))
 	for i := 1; i <= len(g.Players); i++ {
 		player, ok := g.Players[i]
@@ -125,9 +162,11 @@ func (g Game) State(playerID int) State {
 		}
 	}
 	return State{
-		Phase:            phase,
+		Phase:            g.Phase.String(),
 		DrawPileLeft:     g.DrawPile.Len(),
-		DiscardPile:      g.DiscardPile,
+		DiscardCards:     g.DiscardPile.Cards,
+		CardsPerPlayer:   g.CardsPerPlayer,
+		PlayerID:         playerID,
 		Players:          players,
 		LastDrawPlayerID: g.LastDrawPlayerID,
 	}
@@ -135,35 +174,36 @@ func (g Game) State(playerID int) State {
 
 // Command represents a game command
 type Command struct {
-	Name    string
-	Payload interface{}
+	Name     string
+	PlayerID int
+	Payload  interface{}
 }
 
 type (
 	// SetCardPerPlayerPayload is a set cards per player payload
 	SetCardPerPlayerPayload struct {
-		CardsPerPlayer int
+		CardsPerPlayer int `json:"cards_per_player"`
+	}
+
+	// AddPlayerPayload is an add player payload
+	AddPlayerPayload struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
 	}
 
 	// RemovePlayerPayload is a remove player payload
 	RemovePlayerPayload struct {
-		ID int
-	}
-
-	// DrawCardPayload is a draw card payload
-	DrawCardPayload struct {
-		PlayerID int
+		ID int `json:"id"`
 	}
 
 	// AddCardPayload is an add card payload
 	AddCardPayload struct {
-		Name     string
-		PlayerID int
+		Text string `json:"text"`
 	}
 
 	// ResetPayload is a reset payload
 	ResetPayload struct {
-		Mode int
+		Mode int `json:"mode"`
 	}
 )
 
@@ -171,31 +211,35 @@ type (
 func (g *Game) ExecCommand(cmd Command) {
 	switch cmd.Name {
 	case "set_cards_per_player":
-		payload, ok := cmd.Payload.(SetCardPerPlayerPayload)
+		payload, ok := cmd.Payload.(*SetCardPerPlayerPayload)
 		if !ok {
 			return
 		}
 		g.SetCardsPerPlayer(payload.CardsPerPlayer)
+	case "add_player":
+		payload, ok := cmd.Payload.(*AddPlayerPayload)
+		if !ok {
+			return
+		}
+		g.AddPlayer(payload.ID, payload.Name)
 	case "remove_player":
-		payload, ok := cmd.Payload.(RemovePlayerPayload)
+		payload, ok := cmd.Payload.(*RemovePlayerPayload)
 		if !ok {
 			return
 		}
 		g.RemovePlayer(payload.ID)
+	case "start":
+		g.Start()
 	case "draw_card":
-		payload, ok := cmd.Payload.(DrawCardPayload)
-		if !ok {
-			return
-		}
-		g.DrawCard(payload.PlayerID)
+		g.DrawCard(cmd.PlayerID)
 	case "add_card":
-		payload, ok := cmd.Payload.(AddCardPayload)
+		payload, ok := cmd.Payload.(*AddCardPayload)
 		if !ok {
 			return
 		}
-		g.AddCard(payload.Name, payload.PlayerID)
+		g.AddCard(payload.Text, cmd.PlayerID)
 	case "reset":
-		payload, ok := cmd.Payload.(ResetPayload)
+		payload, ok := cmd.Payload.(*ResetPayload)
 		if !ok {
 			return
 		}

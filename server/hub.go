@@ -1,7 +1,6 @@
 package server
 
 import (
-	"log"
 	"math/rand"
 	"net/http"
 	"whatthecard/game"
@@ -62,8 +61,8 @@ func randString(n int) string {
 	return string(b)
 }
 
-// HandleWs handles websocket connection
-func (h *Hub) HandleWs(w http.ResponseWriter, r *http.Request) {
+// HandleWS handles websocket connection
+func (h *Hub) HandleWS(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	roomID := vars["id"]
 	if roomID == "" {
@@ -78,25 +77,28 @@ func (h *Hub) HandleWs(w http.ResponseWriter, r *http.Request) {
 
 	room := h.GetRoom(roomID)
 	if room == nil {
-		log.Println("room not found:", roomID)
+		h.logger.Debug("room not found:", roomID)
 		return
 	}
 
 	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		h.logger.Error(err)
 		return
 	}
 
-	client := NewClient(conn)
+	client := NewClient(conn, h.logger)
 	clientID := room.Join(client)
-	player := room.game.AddPlayer(playerName)
+	player := room.game.AddPlayer(clientID, playerName)
+	room.BroadcastState()
 
 	go room.WritePump(clientID)
 	client.ReadPump()
 
 	room.Leave(clientID)
 	room.game.RemovePlayer(player.ID)
+	room.BroadcastState()
+
 	if room.TotalClient == 0 {
 		delete(h.rooms, room.ID)
 		h.logger.Debugf("room %s has beed deleted", room.ID)

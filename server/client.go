@@ -1,8 +1,8 @@
 package server
 
 import (
-	"log"
 	"time"
+	"whatthecard/logger"
 
 	"github.com/gorilla/websocket"
 )
@@ -20,15 +20,17 @@ const (
 
 // Client provides a websocket connection
 type Client struct {
-	conn *websocket.Conn
-	send chan []byte
+	conn   *websocket.Conn
+	send   chan []byte
+	logger *logger.Logger
 }
 
 // NewClient returns a new Client
-func NewClient(conn *websocket.Conn) *Client {
+func NewClient(conn *websocket.Conn, logger *logger.Logger) *Client {
 	return &Client{
-		conn: conn,
-		send: make(chan []byte),
+		conn:   conn,
+		logger: logger,
+		send:   make(chan []byte),
 	}
 }
 
@@ -44,8 +46,9 @@ func (c *Client) ReadPump() {
 
 	for {
 		_, message, err := c.conn.ReadMessage()
+		c.logger.Debug(string(message))
 		if err != nil {
-			log.Println(err)
+			c.logger.Error(err)
 			break
 		}
 		c.send <- message
@@ -56,6 +59,6 @@ func (c *Client) ReadPump() {
 func (c *Client) WriteJSON(v interface{}) {
 	err := c.conn.WriteJSON(v)
 	if err != nil {
-		log.Println(err)
+		c.logger.Error(err)
 	}
 }

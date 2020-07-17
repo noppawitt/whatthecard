@@ -57,6 +57,7 @@ func (p *Pile) Pop() *Card {
 
 // Push pushs a card to the top of the pile
 func (p *Pile) Push(card *Card) {
-	card.ID = p.lastCardID + 1
+	p.lastCardID++
+	card.ID = p.lastCardID
 	p.Cards = append(p.Cards, card)
 }
