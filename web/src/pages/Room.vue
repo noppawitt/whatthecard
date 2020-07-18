@@ -30,6 +30,7 @@
 import WaitingRoom from '../components/WaitingRoom.vue'
 import SubmitCard from '../components/SubmitCard.vue'
 import Game from '../components/Game.vue'
+import { BACKEND_PORT, WEBSOCKET_SCHEME } from '../config'
 
 export default {
   name: 'Room',
@@ -77,7 +78,7 @@ export default {
       return
     }
     this.roomId = this.$route.params.id
-    this.ws = new WebSocket(`ws://${window.location.hostname}:4000/ws/room/${this.roomId}?player_name=${name}`)
+    this.ws = new WebSocket(`${WEBSOCKET_SCHEME}://${window.location.hostname}:${BACKEND_PORT}/ws/room/${this.roomId}?player_name=${name}`)
     this.ws.addEventListener('message', (event) => {
       this.state = JSON.parse(event.data)
     })
