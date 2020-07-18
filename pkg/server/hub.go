@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
-	"whatthecard/game"
-	"whatthecard/logger"
+	"whatthecard/pkg/game"
+	"whatthecard/pkg/logger"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"

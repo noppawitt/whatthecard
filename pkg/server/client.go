@@ -2,7 +2,7 @@ package server
 
 import (
 	"time"
-	"whatthecard/logger"
+	"whatthecard/pkg/logger"
 
 	"github.com/gorilla/websocket"
 )

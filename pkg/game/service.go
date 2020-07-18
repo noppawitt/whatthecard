@@ -1,6 +1,6 @@
 package game
 
-import "whatthecard/logger"
+import "whatthecard/pkg/logger"
 
 // Service represents a game service
 type Service struct {

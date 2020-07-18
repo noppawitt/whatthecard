@@ -3,7 +3,7 @@ package game
 import (
 	"fmt"
 	"math"
-	"whatthecard/logger"
+	"whatthecard/pkg/logger"
 )
 
 const maxCardsPerPlayer = 20

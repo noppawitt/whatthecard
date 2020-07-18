@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"whatthecard/game"
-	"whatthecard/logger"
+	"whatthecard/pkg/game"
+	"whatthecard/pkg/logger"
 
 	"github.com/gorilla/websocket"
 )

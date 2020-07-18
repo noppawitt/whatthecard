@@ -2,13 +2,15 @@ package main
 
 import (
 	"log"
-	"whatthecard/game"
-	"whatthecard/logger"
-	"whatthecard/server"
+	"os"
+	"whatthecard/pkg/game"
+	"whatthecard/pkg/logger"
+	"whatthecard/pkg/server"
 )
 
 func main() {
-	logger := logger.NewLogger("debug")
+	logLevel := os.Getenv("LOGLEVEL")
+	logger := logger.NewLogger(logLevel)
 	hub := server.NewHub(logger)
 	gameService := game.NewService(logger)
 	server := server.New(hub, gameService, logger)
