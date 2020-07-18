@@ -118,6 +118,8 @@ func (m Message) ToGameCommand(playerID int) (game.Command, error) {
 	}
 	var payload interface{}
 	switch cmd.Name {
+	case "set_cards_per_player":
+		payload = &game.SetCardPerPlayerPayload{}
 	case "add_player":
 		payload = &game.AddPlayerPayload{}
 	case "remove_player":

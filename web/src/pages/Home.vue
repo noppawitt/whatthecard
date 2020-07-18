@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     createRoom () {
-      fetch('room', {
+      fetch('/room', {
         method: 'POST',
       })
         .then(res => res.json())

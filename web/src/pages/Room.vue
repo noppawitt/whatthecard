@@ -4,6 +4,7 @@
     <WaitingRoom
       v-if="state.phase === 'WAITING_PHASE'"
       :state="state"
+      @setCardsPerPlayer="setCardsPerPlayer"
       @start="start"
     />
     <SubmitCard
@@ -46,6 +47,9 @@ export default {
   methods: {
     sendJSON (o) {
       this.ws.send(JSON.stringify(o))
+    },
+    setCardsPerPlayer (n) {
+      this.sendJSON({ name: 'set_cards_per_player', payload: { cards_per_player: n } })
     },
     start () {
       this.sendJSON({ name: 'start' })

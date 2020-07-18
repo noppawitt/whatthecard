@@ -36,13 +36,10 @@ func (s *Server) Start(addr string) error {
 }
 
 func (s *Server) registerRoutes() {
-	s.r.HandleFunc("/", s.handleHome).Methods(http.MethodGet)
 	s.r.HandleFunc("/room", s.handleCreateRoom).Methods(http.MethodPost)
 	s.r.HandleFunc("/ws/room/{id}", s.hub.HandleWS).Methods(http.MethodGet)
-}
 
-func (Server) handleHome(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello"))
+	s.r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web/dist")))
 }
 
 func (s *Server) handleCreateRoom(w http.ResponseWriter, r *http.Request) {

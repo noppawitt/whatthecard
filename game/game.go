@@ -74,8 +74,7 @@ func (g *Game) SetCardsPerPlayer(n int) {
 	if n <= 0 || n > maxCardsPerPlayer {
 		return
 	}
-	g.Reset(0)
-	g.SetCardsPerPlayer(n)
+	g.CardsPerPlayer = n
 }
 
 // AddPlayer adds a player to the game
