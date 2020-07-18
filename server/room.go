@@ -74,16 +74,20 @@ func (r *Room) WritePump(clientID int) {
 			err := json.Unmarshal(msgByte, msg)
 			if err != nil {
 				r.logger.Error(err)
-				return
+				break
 			}
 			cmd, err := msg.ToGameCommand(clientID)
 			if err != nil {
 				r.logger.Error(err)
+				break
+			}
+
+			if err = r.game.ExecCommand(cmd); err != nil {
+				r.logger.Error(err)
+				break
 			}
 
 			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
-
-			r.game.ExecCommand(cmd)
 			r.BroadcastState()
 		}
 	}

@@ -15,6 +15,8 @@
       <Game
         :state="state"
         @draw="draw"
+        @leave="leave"
+        @reset="reset"
       />
     </div>
     <div v-else>
@@ -53,12 +55,25 @@ export default {
     },
     draw () {
       this.sendJSON({ name: 'draw_card' })
+    },
+    leave () {
+      this.$router.push('/')
+    },
+    reset (mode) {
+      const confirm = window.confirm('Are you sure?')
+      if (confirm) {
+        this.sendJSON({ name: 'reset', payload: { mode } })
+      }
     }
   },
   mounted () {
     const name = window.prompt('What is your name?')
+    if (!name) {
+      this.$router.push('/')
+      return
+    }
     this.roomId = this.$route.params.id
-    this.ws = new WebSocket(`ws://localhost:4000/ws/room/${this.roomId}?player_name=${name}`)
+    this.ws = new WebSocket(`ws://${window.location.hostname}:4000/ws/room/${this.roomId}?player_name=${name}`)
     this.ws.addEventListener('message', (event) => {
       this.state = JSON.parse(event.data)
     })
@@ -69,7 +84,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .room {
   position: relative;
   height: 100%;

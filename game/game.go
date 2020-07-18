@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+	"math"
 	"whatthecard/logger"
 )
 
@@ -62,6 +64,7 @@ type State struct {
 	DiscardCards     []*Card   `json:"discard_cards"`
 	CardsPerPlayer   int       `json:"cards_per_player"`
 	PlayerID         int       `json:"player_id"`
+	HostID           int       `json:"host_id"`
 	Players          []*Player `json:"players"`
 	LastDrawPlayerID int       `json:"last_draw_player_id"`
 }
@@ -80,6 +83,11 @@ func (g *Game) AddPlayer(id int, name string) *Player {
 	p := NewPlayer(id, name)
 	g.Players[p.ID] = p
 	g.logger.Debugf("player %d has joined the room %s", id, g.RoomID)
+
+	if len(g.Players) == 1 {
+		g.PromoteHost(p.ID)
+	}
+
 	return p
 }
 
@@ -91,6 +99,26 @@ func (g *Game) RemovePlayer(id int) {
 	}
 	delete(g.Players, id)
 	g.logger.Debugf("player %d has left the room %s", id, g.RoomID)
+
+	if len(g.Players) > 0 && g.isHost(id) {
+		minID := math.MaxInt32
+		for k := range g.Players {
+			if k < minID && g.Players[k] != nil {
+				minID = k
+			}
+		}
+		g.PromoteHost(minID)
+	}
+}
+
+// PromoteHost promotes a player to a host
+func (g *Game) PromoteHost(playerID int) {
+	g.HostID = playerID
+	g.logger.Debugf("player %d has been promoted to a host", playerID)
+}
+
+func (g *Game) isHost(playerID int) bool {
+	return playerID == g.HostID
 }
 
 // DrawCard draws a card
@@ -103,7 +131,7 @@ func (g *Game) DrawCard(playerID int) *Card {
 
 // Reset resets a game
 // modes
-// 0: delete all cards from piles
+// 0: delete all cards from piles then go back to waiting phase
 // 1: reset piles
 func (g *Game) Reset(mode int) {
 	switch mode {
@@ -171,6 +199,7 @@ func (g Game) State(playerID int) State {
 		DiscardCards:     g.DiscardPile.Cards,
 		CardsPerPlayer:   g.CardsPerPlayer,
 		PlayerID:         playerID,
+		HostID:           g.HostID,
 		Players:          players,
 		LastDrawPlayerID: g.LastDrawPlayerID,
 	}
@@ -212,41 +241,70 @@ type (
 )
 
 // ExecCommand executes a command
-func (g *Game) ExecCommand(cmd Command) {
+func (g *Game) ExecCommand(cmd Command) error {
 	switch cmd.Name {
 	case "set_cards_per_player":
+		if !g.isHost(cmd.PlayerID) {
+			return CommandIsForHostOnlyErr{cmd: cmd}
+		}
 		payload, ok := cmd.Payload.(*SetCardPerPlayerPayload)
 		if !ok {
-			return
+			return InvalidCommandErr{cmd: cmd}
 		}
 		g.SetCardsPerPlayer(payload.CardsPerPlayer)
 	case "add_player":
 		payload, ok := cmd.Payload.(*AddPlayerPayload)
 		if !ok {
-			return
+			return InvalidCommandErr{cmd: cmd}
 		}
 		g.AddPlayer(payload.ID, payload.Name)
 	case "remove_player":
 		payload, ok := cmd.Payload.(*RemovePlayerPayload)
 		if !ok {
-			return
+			return InvalidCommandErr{cmd: cmd}
 		}
 		g.RemovePlayer(payload.ID)
 	case "start":
+		if !g.isHost(cmd.PlayerID) {
+			return CommandIsForHostOnlyErr{cmd: cmd}
+		}
 		g.Start()
 	case "draw_card":
 		g.DrawCard(cmd.PlayerID)
 	case "add_card":
 		payload, ok := cmd.Payload.(*AddCardPayload)
 		if !ok {
-			return
+			return InvalidCommandErr{cmd: cmd}
 		}
 		g.AddCard(payload.Text, cmd.PlayerID)
 	case "reset":
+		if !g.isHost(cmd.PlayerID) {
+			return CommandIsForHostOnlyErr{cmd: cmd}
+		}
 		payload, ok := cmd.Payload.(*ResetPayload)
 		if !ok {
-			return
+			return InvalidCommandErr{cmd: cmd}
 		}
 		g.Reset(payload.Mode)
 	}
+
+	return nil
+}
+
+// InvalidCommandErr occurs when a game command is invalid
+type InvalidCommandErr struct {
+	cmd Command
+}
+
+func (e InvalidCommandErr) Error() string {
+	return fmt.Sprintf("cmd: %s with payload: %v is invalid", e.cmd.Name, e.cmd.Payload)
+}
+
+// CommandIsForHostOnlyErr occurs when a non host player try to execute host only command
+type CommandIsForHostOnlyErr struct {
+	cmd Command
+}
+
+func (e CommandIsForHostOnlyErr) Error() string {
+	return fmt.Sprintf("player %d is not a host, cmd: %s must be executed by host player", e.cmd.PlayerID, e.cmd.Name)
 }

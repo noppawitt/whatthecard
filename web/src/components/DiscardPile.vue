@@ -5,6 +5,7 @@
       :key="i"
       :style="{marginLeft:`${i*2}px`, marginTop:`${i}px`}"
       :text="i === nToRender ? topCard.text : ''"
+      :author="i === nToRender ? topCard.author : ''"
     />
   </div>
 </template>
@@ -31,11 +32,11 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .discard-pile {
   position: relative;
-  width: 140px;
-  height: 170px;
+  width: 190px;
+  height: 245px;
   margin-bottom: 10px;
 }
 </style>

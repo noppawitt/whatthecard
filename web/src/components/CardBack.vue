@@ -2,7 +2,7 @@
   <div
     class="card-back"
     @click="$emit('click')"
-  ></div>
+  >WTC</div>
 </template>
 
 <script>
@@ -11,13 +11,17 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .card-back {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
-  width: 100px;
-  height: 150px;
-  background-color: #e44e4e;
+  width: 150px;
+  height: 225px;
+  color: #ffffff;
+  font-size: 2em;
+  background-color: #000000;
   border: 1px solid #a3a3a3;
   border-radius: 5px;
   cursor: pointer;

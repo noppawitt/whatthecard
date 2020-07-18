@@ -7,6 +7,7 @@
     />
     <div
       class="start-btn"
+      v-if="state.player_id === state.host_id"
       @click="start"
     >Start</div>
   </div>
@@ -31,7 +32,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .waiting-room {
   display: flex;
   flex-direction: column;
@@ -46,12 +47,12 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 2px solid #000000;
+  border: 2px solid #555555;
   cursor: pointer;
 }
 
 .start-btn:hover {
   color: #ffffff;
-  background-color: #000000;
+  background-color: #555555;
 }
 </style>

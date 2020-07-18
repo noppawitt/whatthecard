@@ -36,11 +36,11 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .draw-pile {
   position: relative;
-  width: 140px;
-  height: 170px;
+  width: 190px;
+  height: 245px;
   margin-bottom: 10px;
 }
 </style>

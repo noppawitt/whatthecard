@@ -13,7 +13,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .player-slot {
   width: 80%;
   margin: 10px 0;
@@ -22,6 +22,6 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 1px solid #000000;
+  border: 1px solid #555555;
 }
 </style>

@@ -29,6 +29,10 @@ export default {
     submit () {
       const cardText = this.$refs.cardForm.innerText
       this.$refs.cardForm.innerText = ''
+      if (!cardText) {
+        window.alert('card text cannot be blank!')
+        return
+      }
       this.$emit('submit', cardText)
     }
   },
@@ -43,7 +47,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .submit-card {
   display: flex;
   flex-direction: column;
@@ -72,12 +76,12 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 2px solid #000000;
+  border: 2px solid #555555;
   cursor: pointer;
 }
 
 .submit-btn:hover {
   color: #ffffff;
-  background-color: #000000;
+  background-color: #555555;
 }
 </style>
