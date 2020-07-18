@@ -12,3 +12,6 @@ build-frontend:
 
 build-docker:
 	docker build -t whatthecard .
+
+build-docker-dev:
+	docker build -t whatthecard:dev -f Dockerfile.dev .
