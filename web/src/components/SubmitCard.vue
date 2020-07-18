@@ -52,9 +52,9 @@ export default {
 
 .card-form {
   display: block;
-  width: 40vh;
-  height: 60vh;
-  border: 1px solid #a3a3a3;
+  width: 30vh;
+  height: 45vh;
+  border: 2px solid #a3a3a3;
   border-radius: 5px;
   padding: 3vh;
   text-align: left;
@@ -65,7 +65,7 @@ export default {
 }
 
 .submit-btn {
-  width: 40vh;
+  width: 30vh;
   margin-top: 20px;
   padding: 5px 0;
   display: flex;

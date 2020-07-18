@@ -117,6 +117,7 @@ func (g *Game) Reset(mode int) {
 	case 1:
 		g.DrawPile.Cards = append(g.DrawPile.Cards, g.DiscardPile.Cards...)
 		g.DiscardPile.Reset()
+		g.DrawPile.Shuffle()
 	}
 }
 
@@ -148,6 +149,7 @@ func (g *Game) AddCard(text string, playerID int) *Card {
 	}
 
 	if allSubmitted {
+		g.DrawPile.Shuffle()
 		g.Phase = PlayPhase
 	}
 

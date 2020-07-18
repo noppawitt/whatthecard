@@ -3,6 +3,7 @@ package server
 import (
 	"math/rand"
 	"net/http"
+	"time"
 	"whatthecard/game"
 	"whatthecard/logger"
 
@@ -55,8 +56,10 @@ func (h *Hub) CreateRoom(game *game.Game, logger *logger.Logger) *Room {
 func randString(n int) string {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyz"
 	b := make([]byte, n)
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
 	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+		b[i] = letterBytes[r.Intn(len(letterBytes))]
 	}
 	return string(b)
 }

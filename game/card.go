@@ -1,5 +1,10 @@
 package game
 
+import (
+	"math/rand"
+	"time"
+)
+
 // Card represents a card
 type Card struct {
 	ID     int    `json:"id"`
@@ -37,7 +42,9 @@ func (p *Pile) Reset() {
 
 // Shuffle shuffles cards in the pile
 func (p *Pile) Shuffle() {
-	panic("not implemented")
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+	r.Shuffle(len(p.Cards), func(i, j int) { p.Cards[i], p.Cards[j] = p.Cards[j], p.Cards[i] })
 }
 
 // Len return a length of the pile
