@@ -96,7 +96,9 @@ func (g *Game) RemovePlayer(id int) {
 // DrawCard draws a card
 func (g *Game) DrawCard(playerID int) *Card {
 	g.LastDrawPlayerID = playerID
-	return g.DrawPile.Pop()
+	card := g.DrawPile.Pop()
+	g.DiscardPile.Cards = append(g.DiscardPile.Cards, card)
+	return card
 }
 
 // Reset resets a game

@@ -37,7 +37,7 @@ export default {
       return this.state.players.find(p => p.id === this.state.player_id)
     },
     finishedSubmit () {
-      return this.me().number_of_submitted_cards === this.state.cards_per_player
+      return this.me.number_of_submitted_cards === this.state.cards_per_player
     }
   }
 }

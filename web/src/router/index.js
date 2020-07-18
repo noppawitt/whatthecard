@@ -12,11 +12,11 @@ const routes = [
   },
   {
     path: '/room/:id',
-    name: 'Game',
+    name: 'Room',
     // route level code-splitting
     // this generates a separate chunk (room.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "game" */ '../pages/Game.vue')
+    component: () => import(/* webpackChunkName: "room" */ '../pages/Room.vue')
   }
 ]
 

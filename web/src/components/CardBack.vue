@@ -1,6 +1,8 @@
 <template>
-  <div class="card-back">
-  </div>
+  <div
+    class="card-back"
+    @click="$emit('click')"
+  ></div>
 </template>
 
 <script>
@@ -13,8 +15,8 @@ export default {
 .card-back {
   display: block;
   position: absolute;
-  width: 150px;
-  height: 225px;
+  width: 100px;
+  height: 150px;
   background-color: #e44e4e;
   border: 1px solid #a3a3a3;
   border-radius: 5px;

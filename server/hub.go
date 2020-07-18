@@ -101,6 +101,6 @@ func (h *Hub) HandleWS(w http.ResponseWriter, r *http.Request) {
 
 	if room.TotalClient == 0 {
 		delete(h.rooms, room.ID)
-		h.logger.Debugf("room %s has beed deleted", room.ID)
+		h.logger.Debugf("room %s has been deleted", room.ID)
 	}
 }

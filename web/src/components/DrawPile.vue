@@ -4,6 +4,7 @@
       v-for="i in nToRender"
       :key="i"
       :style="{marginLeft:`${i*2}px`, marginTop:`${i}px`}"
+      @click="onCardClick(i)"
     />
   </div>
 </template>
@@ -19,6 +20,14 @@ export default {
   props: {
     n: Number
   },
+  methods: {
+    onCardClick (i) {
+      if (i !== this.n) {
+        return
+      }
+      this.$emit('draw')
+    }
+  },
   computed: {
     nToRender () {
       return this.n > 20 ? 20 : this.n
@@ -30,7 +39,8 @@ export default {
 <style>
 .draw-pile {
   position: relative;
-  width: 150px;
-  height: 225px;
+  width: 140px;
+  height: 170px;
+  margin-bottom: 10px;
 }
 </style>

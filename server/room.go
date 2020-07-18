@@ -66,7 +66,6 @@ func (r *Room) WritePump(clientID int) {
 				return
 			}
 		case msgByte := <-client.send:
-			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if len(msgByte) == 0 {
 				break
 			}
@@ -81,6 +80,8 @@ func (r *Room) WritePump(clientID int) {
 			if err != nil {
 				r.logger.Error(err)
 			}
+
+			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
 
 			r.game.ExecCommand(cmd)
 			r.BroadcastState()

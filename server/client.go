@@ -38,7 +38,6 @@ func NewClient(conn *websocket.Conn, logger *logger.Logger) *Client {
 func (c *Client) ReadPump() {
 	defer close(c.send)
 
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error {
 		c.conn.SetReadDeadline(time.Now().Add(pongWait))
 		return nil
@@ -47,6 +46,7 @@ func (c *Client) ReadPump() {
 	for {
 		_, message, err := c.conn.ReadMessage()
 		c.logger.Debug(string(message))
+		c.conn.SetReadDeadline(time.Now().Add(pongWait))
 		if err != nil {
 			c.logger.Error(err)
 			break

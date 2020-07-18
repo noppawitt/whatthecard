@@ -5,7 +5,10 @@
       title="Create Room"
       @click="createRoom"
     />
-    <Button title="Join Room" />
+    <Button
+      title="Join Room"
+      @click="joinRoom"
+    />
   </div>
 </template>
 
@@ -24,9 +27,16 @@ export default {
       })
         .then(res => res.json())
         .then(({ room_id }) => {
-          this.$router.push(`/room/${room_id}`)
+          this.goToRoom(room_id)
         })
         .catch(console.log)
+    },
+    goToRoom (id) {
+      this.$router.push(`/room/${id}`)
+    },
+    joinRoom () {
+      const roomId = window.prompt('Enter room id')
+      this.goToRoom(roomId)
     }
   }
 }

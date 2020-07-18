@@ -1,5 +1,5 @@
 <template>
-  <div class="game">
+  <div class="room">
     <h2 class="header">Room: {{ roomId }}</h2>
     <WaitingRoom
       v-if="state.phase === 'WAITING_PHASE'"
@@ -12,8 +12,10 @@
       @submit="submitCard"
     />
     <div v-else-if="state.phase === 'PLAY_PHASE'">
-      <DrawPile :n="20" />
-      <DiscardPile :n="20" />
+      <Game
+        :state="state"
+        @draw="draw"
+      />
     </div>
     <div v-else>
       Loading
@@ -22,18 +24,16 @@
 </template>
 
 <script>
-import DrawPile from '../components/DrawPile.vue'
-import DiscardPile from '../components/DiscardPile.vue'
 import WaitingRoom from '../components/WaitingRoom.vue'
 import SubmitCard from '../components/SubmitCard.vue'
+import Game from '../components/Game.vue'
 
 export default {
-  name: 'Game',
+  name: 'Room',
   components: {
-    DrawPile,
-    DiscardPile,
     WaitingRoom,
-    SubmitCard
+    SubmitCard,
+    Game
   },
   data () {
     return {
@@ -50,6 +50,9 @@ export default {
     },
     submitCard (text) {
       this.sendJSON({ name: 'add_card', payload: { text } })
+    },
+    draw () {
+      this.sendJSON({ name: 'draw_card' })
     }
   },
   mounted () {
@@ -67,7 +70,7 @@ export default {
 </script>
 
 <style>
-.game {
+.room {
   position: relative;
   height: 100%;
   width: 100%;

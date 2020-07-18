@@ -1,27 +1,31 @@
 <template>
   <div class="discard-pile">
-    <CardBack
+    <CardFace
       v-for="i in nToRender"
       :key="i"
       :style="{marginLeft:`${i*2}px`, marginTop:`${i}px`}"
+      :text="i === nToRender ? topCard.text : ''"
     />
   </div>
 </template>
 
 <script>
-import CardBack from './CardBack.vue'
+import CardFace from './CardFace.vue'
 
 export default {
   name: 'Discardpile',
   components: {
-    CardBack
+    CardFace
   },
   props: {
-    n: Number
+    cards: Array,
   },
   computed: {
     nToRender () {
-      return this.n > 20 ? 20 : this.n
+      return this.cards.length > 20 ? 20 : this.cards.length
+    },
+    topCard () {
+      return this.cards[this.cards.length - 1]
     }
   }
 }
@@ -30,7 +34,8 @@ export default {
 <style>
 .discard-pile {
   position: relative;
-  width: 150px;
-  height: 225px;
+  width: 140px;
+  height: 170px;
+  margin-bottom: 10px;
 }
 </style>
