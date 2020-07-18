@@ -87,7 +87,6 @@ func (r *Room) WritePump(clientID int) {
 				break
 			}
 
-			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			r.BroadcastState()
 		}
 	}
@@ -99,6 +98,7 @@ func (r *Room) BroadcastState() {
 		state := r.game.State(player.ID)
 		client := r.clients[player.ID]
 		if client != nil {
+			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			client.WriteJSON(state)
 		}
 	}
