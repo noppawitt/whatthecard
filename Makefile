@@ -2,13 +2,13 @@ run-server:
 	go run main.go
 
 run-frontend:
-	yarn start
+	yarn --cwd ./web serve
 
 node_modules:
-	yarn install
+	yarn --cwd ./web install
 
 build-frontend:
-	yarn build
+	yarn --cwd ./web build
 
 build-docker:
 	docker build -t whatthecard .
