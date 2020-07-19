@@ -5,7 +5,10 @@
       :key=p.id
       :name="p.name"
     />
-    <div class="row">
+    <div
+      class="row"
+      v-if="state.player_id === state.host_id"
+    >
       <label for="cards-per-player">cards per player</label>
       <select
         id="cards-per-player"
@@ -20,10 +23,14 @@
       </select>
     </div>
     <div
-      class="start-btn"
+      class="btn"
       v-if="state.player_id === state.host_id"
       @click="start"
     >Start</div>
+    <div
+      class="btn"
+      @click="leave"
+    >Leave</div>
   </div>
 </template>
 
@@ -47,6 +54,9 @@ export default {
     start () {
       this.$emit('start')
     },
+    leave () {
+      this.$emit('leave')
+    },
     setCardsPerPlayer () {
       this.$emit('setCardsPerPlayer', this.cardsPerPlayer)
     }
@@ -61,7 +71,7 @@ export default {
   align-items: center;
 }
 
-.start-btn {
+.btn {
   width: 80%;
   margin-top: 20px;
   padding: 5px 0;
@@ -73,7 +83,7 @@ export default {
   cursor: pointer;
 }
 
-.start-btn:hover {
+.btn:hover {
   color: #ffffff;
   background-color: #555555;
 }

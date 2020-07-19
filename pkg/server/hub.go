@@ -3,6 +3,7 @@ package server
 import (
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 	"whatthecard/pkg/game"
 	"whatthecard/pkg/logger"
@@ -67,7 +68,7 @@ func randString(n int) string {
 // HandleWS handles websocket connection
 func (h *Hub) HandleWS(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	roomID := vars["id"]
+	roomID := strings.ToLower(vars["id"])
 	if roomID == "" {
 		writeError(w, "room id is required", http.StatusBadRequest)
 	}

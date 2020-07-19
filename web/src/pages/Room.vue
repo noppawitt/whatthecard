@@ -11,6 +11,7 @@
       v-else-if="state.phase === 'SUBMIT_PHASE'"
       :state="state"
       @submit="submitCard"
+      @leave="leave"
     />
     <div v-else-if="state.phase === 'PLAY_PHASE'">
       <Game
@@ -77,7 +78,11 @@ export default {
       this.$router.push('/')
       return
     }
-    this.roomId = this.$route.params.id
+    this.roomId = this.$route.params.id.toLowerCase()
+    if (!this.roomId) {
+      this.$router.push('/')
+      return
+    }
     this.ws = new WebSocket(`${WEBSOCKET_SCHEME}://${window.location.host}/ws/room/${this.roomId}?player_name=${name}`)
     this.ws.addEventListener('message', (event) => {
       this.state = JSON.parse(event.data)

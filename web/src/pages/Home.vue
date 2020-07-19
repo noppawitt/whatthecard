@@ -35,7 +35,7 @@ export default {
       this.$router.push(`/room/${id}`)
     },
     joinRoom () {
-      const roomId = window.prompt('Enter room id')
+      const roomId = window.prompt('Enter room id').toLowerCase()
       if (!roomId) {
         this.$router.push('/')
         return
